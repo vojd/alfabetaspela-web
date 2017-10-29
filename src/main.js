@@ -44,7 +44,7 @@ const letterToFileChar = (letter) => {
 }
 
 const loadSounds = () => {
-    const dir = '/sfx/swe';
+    const dir = './sfx/swe';
     const letters = getSwedishLetters();
     const sounds = [];
     letters.forEach(letter =>
