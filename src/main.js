@@ -1,35 +1,61 @@
+'use strict';
 
+class InputManager {
+    constructor(document) {
+        this.document = document;
+        this.inputField = document.getElementById('text-input');
+        this.inputField.addEventListener('blur', function() {
+            this.inputField.focus();
+        });
 
-const keyboardService = (document) => {
+        this.document.addEventListener('touchstart', function() {
+            this.inputField.focus();
+        });
+    }
 
-    const acceptedKeyCodes = [
-        221, // å 
-        222, // ä
-        192, // ö
-    ];
-    const callback = (fn) => {
-        document.addEventListener('keydown', (key) => {
+    whenLetterChanged(callbackFn) {
+        //this.inputField.focus();
+        const acceptedKeyCodes = [
+            221, // å 
+            222, // ä
+            192, // ö
+        ];
+
+        this.inputField.addEventListener('keyup', function(key) {
             const keyCode = key.keyCode;
             if((keyCode >= 65 && keyCode <= 90) || acceptedKeyCodes.includes(key.keyCode)) {
-                fn(key.key.toUpperCase());
+                callbackFn(key.key.toUpperCase());
             }
         });
     };
-    return callback;
-};
+}
 
 // Letters for sound loading
-const getSwedishLetters = () => {
+function getSwedishLetters() {
     const firstKeyCode = 65;
     const lastKeyCode = 90;
-    const letters = Array.from(new Array((lastKeyCode - firstKeyCode) + 1),(val,index)=>String.fromCharCode(index + firstKeyCode));
+    const letters = Array
+    .apply(null, 
+        Array((lastKeyCode - firstKeyCode) + 1))
+        .map(function (_, i) {
+            return String.fromCharCode(i + firstKeyCode);
+        });
+
+        /*
+    const letters = Array.from(
+        new Array((lastKeyCode - firstKeyCode) + 1),function(val,index) {
+            return String.fromCharCode(index + firstKeyCode)
+        });
+        */
     letters.push('au');
     letters.push('ae');
     letters.push('ou');    
-    return letters.map(letter => letter.toUpperCase());
+    return letters.map(function(letter) {
+        letter.toUpperCase();
+    });
 }
 
-const letterToFileChar = (letter) => {
+function letterToFileChar(letter) {
     switch(letter) {
         case 'Å':
             return 'AU';
@@ -43,17 +69,18 @@ const letterToFileChar = (letter) => {
 
 }
 
-const loadSounds = () => {
+function loadSounds() {
     const dir = './sfx/swe';
     const letters = getSwedishLetters();
     const sounds = [];
-    letters.forEach(letter =>
-        sounds[letter] = new Audio(`${dir}/${letter}_swe.wav`));
+    letters.forEach(function(letter) {
+        return sounds[letter] = new Audio(`${dir}/${letter}_swe.wav`);
+    });
     console.log('sounds loaded');
     return sounds;
 };
 
-const renderLetter = (document, letter) => {
+function renderLetter(document, letter) {
     const newLetterNode = document.createElement('span');
     newLetterNode.id = "letter";
     newLetterNode.appendChild(document.createTextNode(letter.toUpperCase()));
@@ -62,7 +89,7 @@ const renderLetter = (document, letter) => {
     parent.replaceChild(newLetterNode, letterNode);
 };
 
-const playSound = (sounds, letter) => {
+function playSound (sounds, letter) {
     console.log(sounds);
     const l = letterToFileChar(letter);
     console.log(l);
@@ -70,10 +97,10 @@ const playSound = (sounds, letter) => {
 };
 
 function main(document) {
-
+    
     const sounds = loadSounds();
-    const whenLetterChanged = keyboardService(document);
-    whenLetterChanged((letter) => {
+    const inputManager = new InputManager(document);
+    inputManager.whenLetterChanged(function(letter) {
         renderLetter(document, letter);
         playSound(sounds, letter);
     });
