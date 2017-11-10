@@ -1,36 +1,50 @@
 
+const writtenWords = [
+    [] // holds the first word to be written
+];
 
-const keyboardService = (document) => {
+class KeyboardService {
 
-    const acceptedKeyCodes = [
-        221, // å 
-        222, // ä
-        192, // ö
-    ];
-    const callback = (fn) => {
-        document.addEventListener('keydown', (key) => {
+    constructor(document) {
+        this.document = document;
+        this.acceptedKeyCodes = [
+            221, // å
+            222, // ä
+            192, // ö
+        ];
+    }
+
+    whenCharChanged(fn) {
+        this.document.addEventListener('keydown', (key) => {
             const keyCode = key.keyCode;
-            if((keyCode >= 65 && keyCode <= 90) || acceptedKeyCodes.includes(key.keyCode)) {
+            if ((keyCode >= 65 && keyCode <= 90) || this.acceptedKeyCodes.includes(key.keyCode)) {
                 fn(key.key.toUpperCase());
             }
+        })
+    }
+
+    whenEnterWasPressed(fn) {
+        this.document.addEventListener('keydown', (key) => {
+            if (key.key === 'Enter') {
+                fn(true);
+            }
         });
-    };
-    return callback;
-};
+    }
+}
 
 // Letters for sound loading
 const getSwedishLetters = () => {
     const firstKeyCode = 65;
     const lastKeyCode = 90;
-    const letters = Array.from(new Array((lastKeyCode - firstKeyCode) + 1),(val,index)=>String.fromCharCode(index + firstKeyCode));
+    const letters = Array.from(new Array((lastKeyCode - firstKeyCode) + 1), (val, index) => String.fromCharCode(index + firstKeyCode));
     letters.push('au');
     letters.push('ae');
-    letters.push('ou');    
+    letters.push('ou');
     return letters.map(letter => letter.toUpperCase());
-}
+};
 
 const letterToFileChar = (letter) => {
-    switch(letter) {
+    switch (letter) {
         case 'Å':
             return 'AU';
         case 'Ä':
@@ -40,8 +54,7 @@ const letterToFileChar = (letter) => {
         default:
             return letter;
     }
-
-}
+};
 
 const loadSounds = () => {
     const dir = '/sfx/swe';
@@ -54,9 +67,46 @@ const loadSounds = () => {
 };
 
 const renderLetter = (document, letter) => {
-    const newLetterNode = document.createElement('span');
+    const newLetterNode = document.createElement('div');
     newLetterNode.id = "letter";
     newLetterNode.appendChild(document.createTextNode(letter.toUpperCase()));
+    const letterNode = document.getElementById('letter');
+    const parent = letterNode.parentNode;
+    parent.replaceChild(newLetterNode, letterNode);
+};
+
+const renderWords = (document, words) => {
+    const newNode = document.createElement('div');
+    newNode.id = "words";
+    newNode.classList = ['center'];
+    const nodes = words.map((word) => {
+        const node = document.createElement('div');
+        node.appendChild(
+          document.createTextNode(
+            word.map(c => c.toUpperCase()).join(''))
+        );
+        return node;
+    });
+
+    const wordNode = document.getElementById('words');
+    while(wordNode.firstChild) {
+        wordNode.removeChild(wordNode.firstChild);
+    }
+
+    nodes.forEach((node) => {
+        wordNode.appendChild(node);
+    });
+};
+
+const renderWord = (document, letter) => {
+    const word = writtenWords[writtenWords.length - 1];
+    word.push(letter);
+    const newLetterNode = document.createElement('span');
+    newLetterNode.id = "letter";
+    newLetterNode.appendChild(
+        document.createTextNode(
+            word.map(c => c.toUpperCase()).join('')));
+
     const letterNode = document.getElementById('letter');
     const parent = letterNode.parentNode;
     parent.replaceChild(newLetterNode, letterNode);
@@ -72,12 +122,21 @@ const playSound = (sounds, letter) => {
 function main(document) {
 
     const sounds = loadSounds();
-    const whenLetterChanged = keyboardService(document);
-    whenLetterChanged((letter) => {
-        renderLetter(document, letter);
-        playSound(sounds, letter);
+
+    const keyboardService = new KeyboardService(document);
+    keyboardService.whenCharChanged((char) => {
+        renderWord(document, char);
+        playSound(sounds, char);
     });
-    console.log('running');
+
+    keyboardService.whenEnterWasPressed(() => {
+        renderWords(document, writtenWords);
+        if(writtenWords.length > 5) {
+            writtenWords.shift();
+        }
+        writtenWords.push([]);
+        renderWord(document, '');
+    });
 }
 
 main(document);
