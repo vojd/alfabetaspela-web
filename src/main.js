@@ -1,6 +1,3 @@
-const GAME_MODES = {
-    SIMPLE: 'SIMPLE',
-};
 
 const writtenWords = [
     [] // holds the first word to be written
@@ -70,7 +67,7 @@ const loadSounds = () => {
 };
 
 const renderLetter = (document, letter) => {
-    const newLetterNode = document.createElement('span');
+    const newLetterNode = document.createElement('div');
     newLetterNode.id = "letter";
     newLetterNode.appendChild(document.createTextNode(letter.toUpperCase()));
     const letterNode = document.getElementById('letter');
@@ -81,6 +78,7 @@ const renderLetter = (document, letter) => {
 const renderWords = (document, words) => {
     const newNode = document.createElement('div');
     newNode.id = "words";
+    newNode.classList = ['center'];
     const nodes = words.map((word) => {
         const node = document.createElement('div');
         node.appendChild(
@@ -133,7 +131,11 @@ function main(document) {
 
     keyboardService.whenEnterWasPressed(() => {
         renderWords(document, writtenWords);
+        if(writtenWords.length > 5) {
+            writtenWords.shift();
+        }
         writtenWords.push([]);
+        renderWord(document, '');
     });
 }
 
