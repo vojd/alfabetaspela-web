@@ -4,7 +4,8 @@
     </head>
 
     <body>
-        <div id="letter-wrapper" class="centered">
+        <div id="words"></div>
+        <div id="letter-wrapper" class="center">
             <div id="letter"></div>
         </div>
     </body>
@@ -14,11 +15,31 @@
             background: #B94141;
         }
 
+        #letter-wrapper {
+            bottom: 250px;
+            position: absolute;
+            left: 0;
+            right: 0;
+        }
+
         #letter {
             color: #fff;
             font-size: 72px;
         }
-    
+
+        div#words {
+            font-size: 28px;
+            color: #fff;
+        }
+
+        div#words > div {
+            text-align: center;
+        }
+
+        .center {
+            text-align: center;
+        }
+
         .centered {
             position: absolute;
             top:0;
